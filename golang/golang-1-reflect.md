@@ -155,3 +155,20 @@ func main() {
 // add val msg:  world
 // add val x: [1 2 5]
 ```
+### 4. reflect.Indirect
+func Indirect(v Value) value    
+Indirect returns the value that v points to. If v is a nil pointer, Indirect returns a zero Value. If v is not a pointer, Indirect returns v.
+
+```go
+func main() {
+    var str []string
+    strValue := reflect.ValueOf(&str)
+    indirectValue := reflect.Indirect(strValue)  // 获取nil指针的Value
+    valueSlice := reflect.MakeSlice(indirectValue.Type(), 100, 1024)
+    kind:= valueSlice.Kind()
+    cap:= valueSlice.Cap()
+    length:= valueSlice.Len()
+    fmt.Printf("Type is [%v] with capacity of %v bytes"+ " and length of %v .\n", kind, cap, length)
+}
+// Type is [slice] with capacity of 1024 bytes and length of 100 .
+```
