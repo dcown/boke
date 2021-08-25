@@ -34,3 +34,64 @@ func main() {
 // 16
 ```
 获取j地址时之所以偏移**unsafe.Sizeof(int64(0))**，涉及到内存偏移的问题。
+### 2. 获取 slice 长度
+```go
+// runtime/slice.go
+type slice struct {
+    array unsafe.Pointer // 元素指针
+    len   int // 长度 
+    cap   int // 容量
+}
+func main() {
+    s := make([]int, 9, 20)
+    Len := *(*int)(unsafe.Pointer(uintptr(unsafe.Pointer(&s)) + uintptr(8)))
+    fmt.Println(Len, len(s))
+    Cap := *(*int)(unsafe.Pointer(uintptr(unsafe.Pointer(&s)) + uintptr(16)))
+    fmt.Println(Cap, cap(s))
+}
+// 9 9
+// 20 20
+```
+
+### 3. string 和 slice 的相互转换 实现 zero-copy
+只需要共享底层 []byte 数组就可以实现 zero-copy
+
+```go
+// reflect
+type StringHeader struct {
+    Data uintptr
+    Len  int
+}
+type SliceHeader struct {
+    Data uintptr
+    Len  int
+    Cap  int
+}
+func string2bytes(s string) []byte {
+    stringHeader := (*reflect.StringHeader)(unsafe.Pointer(&s))
+    bh := reflect.SliceHeader{
+        Data: stringHeader.Data,
+        Len: stringHeader.Len,
+        Cap: stringHeader.Len,
+    }
+    return *(*[]byte)(unsafe.Pointer(&bh))
+}
+func bytes2string(b []byte) string {
+    sliceHeader := (*reflect.SliceHeader)(unsafe.Pointer(&b))
+    s := reflect.StringHeader{
+        Data: sliceHeader.Data,
+        Len: sliceHeader.Len,
+    }
+    return *(*string)(unsafe.Pointer(&s))
+}
+
+func main() {
+    s := "hello"
+    fmt.Println(s, "-> ", []byte(s))
+    fmt.Println(s, "-> ", string2bytes(s))
+    bs := "world"
+    b := []byte(bs)
+    fmt.Println(b, "->", bs)
+    fmt.Println(b, "->", bytes2string(b))
+}
+```
