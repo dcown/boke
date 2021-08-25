@@ -1,5 +1,5 @@
 # github.com/bigwhite/experiments/blob/master/http-benchmark/client/http_client_load.sh
-# ./http_client_load.sh 3 10000 10 GET http://10.10.195.181:8080
+# ./http_client_load.sh 5 10000 10 GET http://10.10.195.181:8080
 # mac brew install coreutils
 
 echo "$0 task_num count_per_hey conn_per_hey method url"
