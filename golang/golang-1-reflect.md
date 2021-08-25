@@ -172,3 +172,45 @@ func main() {
 }
 // Type is [slice] with capacity of 1024 bytes and length of 100 .
 ```
+### 5. reflect.Type.Implement
+检测是否实现了某个接口规范
+
+```go
+type Model interface {
+    m()
+}
+func HasModels(m Model) {
+    s := reflect.ValueOf(m).Elem()
+    t := s.Type()
+    modelType := reflect.TypeOf((*Model)(nil)).Elem()
+    for i := 0; i < s.NumField(); i++ {
+        f := t.Field(i)
+        fmt.Printf("%d: %s %s -> %t\n", i, f.Name, f.Type, f.Type.Implements(modelType))
+    }
+}
+
+type Company struct{}
+
+func (Company) m() {}
+
+type Department struct{}
+
+func (*Department) m() {}
+
+type User struct {
+    CompanyA    Company
+    CompanyB    *Company
+    DepartmentA Department
+    DepartmentB *Department
+}
+
+func (User) m() {}
+
+func main() {
+    HasModels(&User{})
+}
+// 0: CompanyA main.Company -> true
+// 1: CompanyB *main.Company -> true
+// 2: DepartmentA main.Department -> false
+// 3: DepartmentB *main.Department -> true
+``` 
